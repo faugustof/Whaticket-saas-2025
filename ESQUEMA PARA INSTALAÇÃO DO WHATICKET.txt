@@ -1,0 +1,41 @@
+=====================================
+ESQUEMA PARA INSTALAÇÃO DO WHATICKET
+=====================================
+
+SISTEMA OPERACIONAL UBUNTU 24.04
+
+-------------------------------------
+
+1. Contratar uma VPS: https://www.seuprovedor.com.br/servidor-vps
+
+ - Eu comecei com o plano KVM2. Depois de um tempo, com a demanda aumentando, eu mudei para o KVM4.
+
+ - Comece devagar!
+
+2. Comprar um domínio: https://www.seuprovedor.com.br/registro-de-dominio
+
+3. Criar 2 subdomínios para o whaticket
+
+4. Baixar o fonte do Whaticket: https://chat.whatsapp.com/LOkLZN8YnUiIsdny54EyCS
+
+5. Subir o código fonte para o seu github
+
+6. Instalar o whaticket
+
+6.1 Fazer o acesso remoto via ssh
+
+6.2 Criar uma conta para o usuário deploy
+
+6.3 Adicionar o usuário deploy ao grupo sudo
+
+6.4 Acessar a VPS com o usuário deploy
+
+
+COMANDO DE INSTALAÇÃO DO WHATICKET
+
+sudo apt install -y git && git clone https://github.com/weliton2k/instalador-whaticket-main-v.10.0.1.git && sudo chmod -R 777 instalador-whaticket-main-v.10.0.1 && cd instalador-whaticket-main-v.10.0.1 && sudo ./install_primaria
+
+
+https://github.com/usuario/whaticket.git
+
+

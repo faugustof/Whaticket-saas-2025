@@ -1,0 +1,141 @@
+================================
+PRÉ-INSTALAÇÃO
+================================
+
+1. CONTRATAR UMA VPS: https://x.gd/GgzKP
+2. COMPRAR UM DOMÍNIO: https://x.gd/GgzKP
+3. CRIAR 5 SUBDMÍNIOS (2 PARA O WHATICKET E 3 PARA O TYPEBOT)
+
+    WHATICKET:
+    app
+    api
+
+    TYPEBOT:
+    typebot
+    chat
+    storage
+
+4. INSTALAR NA VPS O SISTEMA OPERACIONAL UBUNTU 20.04
+
+================================
+INSTALAÇÃO DO WHATICKET
+================================
+
+1. BAIXAR O CÓDIGO-FONTE DO WHATICKET DISPONÍVEL NA PÁGINA DE APOIO
+
+    https://devyan.com.br/canal_lr
+
+2. SUBIR O CÓDIGO-FONTE DO WHATICKET PARA O GITHUB E COPIAR O LINK DIRETO DO GITHUB
+
+
+3. ACESSAR A VPS VIA SSH COM A CONTA DO ROOT
+
+    del /f /q "%userprofile%\.ssh\*
+    ssh root@IP_DA_SUA_VPS
+
+
+4. CRIAR A CONTA DO USUÁRIO DEPLOY NA VPS
+
+    adduser deploy
+    
+
+5. ADICIONAR O USUÁRIO DEPLOY AO GRUPO SUDO
+
+    adduser deploy sudo && exit
+
+6. ACESSAR A VPS VIA SSH COM A CONTA DO DEPLOY
+
+    ssh deploy@IP_DA_SUA_VPS
+
+
+7. EXECUTAR E RESPONDER O INSTALADOR NA VPS USANDO A CONTA DO DEPLOY
+
+================================
+INSTALAÇÃO DO TYPEBOT
+================================
+
+1. INSTALAR OS PACOTES E DEPENDÊNCIAS USANDO A CONTA DO USUÁRIO ROOT
+
+    ssh root@IP_DA_SUA_VPS
+    SUA_SENHA
+
+    apt update && apt install certbot python3-certbot-nginx docker-compose python2-minimal -y
+
+
+2. ADICIONAR O USUÁRIO ATUAL AO GRUPO DOCKER
+
+    usermod -aG docker ${USER}
+
+
+3. GERAR CHAVE CRIPTOGRAFADA
+
+    openssl rand -base64 24 | tr -d '\n' ; echo
+
+
+4. EDITAR O ARQUIVO DOCKER-COMPOSE.YML (Substitua o conteúdo deste arquivo pelas suas informações)
+
+    nano docker-compose.yml
+
+5. INSTALAR O TYPEBOT
+
+    docker-compose up -d
+
+
+6. CRIAR O SITE DO SUBDOMÍNIO TYPEBOT (Substitua o conteúdo deste arquivo pelas suas informações)
+
+    nano /etc/nginx/sites-available/typebot
+
+    server {
+        listen 80;
+        server_name typebot.wamanager.com.br;
+
+        location / {
+            proxy_pass http://127.0.0.1:3001; # Serviço Typebot
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+
+
+7. CRIAR O LINK SIMBÓLICO PARA O SUBDOMÍNIO TYPEBOT
+
+    ln -s /etc/nginx/sites-available/typebot /etc/nginx/sites-enabled/
+
+
+8. CRIAR O SITE DO SUBDOMÍNIO CHAT (Substitua o conteúdo deste arquivo pelas suas informações)
+
+    nano /etc/nginx/sites-available/chat
+
+    server {
+        listen 80;
+        server_name chat.wamanager.com.br;
+
+        location / {
+            proxy_pass http://127.0.0.1:3002; # Serviço chat
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+
+
+9. CRIAR O LINK SIMBÓLICO PARA O SUBDOMÍNIO CHAT
+
+    ln -s /etc/nginx/sites-available/chat /etc/nginx/sites-enabled/
+
+
+10. GERAR OS CERTIFICADOS PARA OS 2 SUBDOMÍNIOS
+
+    nginx -t && systemctl restart nginx
+
+    certbot --nginx -d typebot.wamanager.com.br && certbot --nginx -d chat.wamanager.com.br
+
+
+11. VERIFICAR SE TEM ERRO E REINICIAR O NGINX
+    
+    nginx -t && systemctl restart nginx

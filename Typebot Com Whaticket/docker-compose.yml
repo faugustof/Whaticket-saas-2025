@@ -1,0 +1,81 @@
+version: '3.3'
+services:
+  typebot-db:
+    image: postgres:13
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=typebot
+      - POSTGRES_PASSWORD=typebot
+  typebot-builder:
+    ports:
+      - 3001:3000
+    image: baptistearno/typebot-builder:latest
+    restart: always
+    depends_on:
+      - typebot-db
+    environment:
+      - DATABASE_URL=postgresql://postgres:typebot@typebot-db:5432/typebot
+      - NEXTAUTH_URL=https://typebot.wamanager.com.br
+      - NEXT_PUBLIC_VIEWER_URL=https://chat.wamanager.com.br
+      - NEXTAUTH_URL_INTERNAL=http://localhost:3001
+      - ENCRYPTION_SECRET=
+      - ADMIN_EMAIL=profleandroreisfonseca@gmail.com
+      - DISABLE_SIGNUP=false
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_USERNAME=profleandroreisfonseca@gmail.com
+      - SMTP_PASSWORD=
+      - NEXT_PUBLIC_SMTP_FROM='Suporte Typebot' <profleandroreisfonseca@gmail.com>
+      - S3_ACCESS_KEY=minio
+      - S3_SECRET_KEY=minio123
+      - S3_BUCKET=typebot
+      - S3_ENDPOINT=storage.wamanager.com.br
+  
+  typebot-viewer:
+    ports:
+      - 3002:3000
+    image: baptistearno/typebot-viewer:latest
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:typebot@typebot-db:5432/typebot
+      - NEXTAUTH_URL=https://typebot.wamanager.com.br
+      - NEXT_PUBLIC_VIEWER_URL=https://chat.wamanager.com.br
+      - NEXTAUTH_URL_INTERNAL=http://localhost:3001
+      - ENCRYPTION_SECRET=
+      - S3_ACCESS_KEY=minio
+      - S3_SECRET_KEY=minio123
+      - S3_BUCKET=typebot
+      - S3_ENDPOINT=storage.wamanager.com.br
+  mail:
+    image: bytemark/smtp
+    restart: always
+  minio:
+    labels:
+      virtual.host: 'storage.wamanager.com.br'
+      virtual.port: '9000'
+      virtual.tls-email: 'profleandroreisfonseca@gmail.com'
+    image: minio/minio
+    command: server /data
+    ports:
+      - '9000:9000'
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    volumes:
+      - s3_data:/data
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc config host add minio http://minio:9000 minio minio123;
+      /usr/bin/mc mb minio/typebot;
+      /usr/bin/mc anonymous set public minio/typebot/public;
+      exit 0;
+      "
+volumes:
+  db_data:
+  s3_data:

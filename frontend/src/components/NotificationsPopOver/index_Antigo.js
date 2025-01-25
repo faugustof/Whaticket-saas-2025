@@ -97,9 +97,6 @@ const NotificationsPopOver = ({ volume }) => {
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
-    if (!socket) {
-      return () => {}; 
-    }
 
     const queueIds = queues.map((q) => q.id);
 

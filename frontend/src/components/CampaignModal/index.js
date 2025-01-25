@@ -1,26 +1,28 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 
-import { Field, Form, Formik } from "formik";
-import { head } from "lodash";
-import { toast } from "react-toastify";
 import * as Yup from "yup";
+import { Formik, Form, Field } from "formik";
+import { toast } from "react-toastify";
+import { head } from "lodash";
 
+import { makeStyles } from "@material-ui/core/styles";
+import { green } from "@material-ui/core/colors";
 import Button from "@material-ui/core/Button";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import IconButton from "@material-ui/core/IconButton";
+import TextField from "@material-ui/core/TextField";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import IconButton from "@material-ui/core/IconButton";
-import TextField from "@material-ui/core/TextField";
-import { green } from "@material-ui/core/colors";
-import { makeStyles } from "@material-ui/core/styles";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import AttachFileIcon from "@material-ui/icons/AttachFile";
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 
-import moment from "moment";
 import { i18n } from "../../translate/i18n";
+import moment from "moment";
 
+import api from "../../services/api";
+import toastError from "../../errors/toastError";
 import {
   Box,
   FormControl,
@@ -32,8 +34,6 @@ import {
   Tabs,
 } from "@material-ui/core";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import toastError from "../../errors/toastError";
-import api from "../../services/api";
 import ConfirmationModal from "../ConfirmationModal";
 
 const useStyles = makeStyles((theme) => ({
@@ -378,7 +378,7 @@ const CampaignModal = ({
             <Form>
               <DialogContent dividers>
                 <Grid spacing={2} container>
-                  <Grid xs={12} item>
+                  <Grid xs={12} md={9} item>
                     <Field
                       as={TextField}
                       label={i18n.t("campaigns.dialog.form.name")}
@@ -392,7 +392,7 @@ const CampaignModal = ({
                       disabled={!campaignEditable}
                     />
                   </Grid>
-                  {/* <Grid xs={12} md={3} item>
+                  <Grid xs={12} md={3} item>
                     <FormControl
                       variant="outlined"
                       margin="dense"
@@ -420,7 +420,7 @@ const CampaignModal = ({
                         <MenuItem value={true}>Habilitada</MenuItem>
                       </Field>
                     </FormControl>
-                  </Grid> */}
+                  </Grid>
                   <Grid xs={12} md={4} item>
                     <FormControl
                       variant="outlined"

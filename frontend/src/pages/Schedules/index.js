@@ -16,7 +16,7 @@ import ScheduleModal from "../../components/ScheduleModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
 import moment from "moment";
-import { SocketContext } from "../../context/Socket/SocketContext";
+import { socketConnection } from "../../services/socket";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import usePlans from "../../hooks/usePlans";
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -139,8 +139,6 @@ const Schedules = () => {
     }
   }, [contactId]);
 
-  const socketManager = useContext(SocketContext);
-
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
@@ -162,7 +160,7 @@ const Schedules = () => {
 
   useEffect(() => {
     handleOpenScheduleModalFromContactId();
-    const socket = socketManager.getSocket(user.companyId);
+    const socket = socketConnection({ companyId: user.companyId });
 
     socket.on(`company${user.companyId}-schedule`, (data) => {
       if (data.action === "update" || data.action === "create") {
@@ -177,7 +175,7 @@ const Schedules = () => {
     return () => {
       socket.disconnect();
     };
-  }, [handleOpenScheduleModalFromContactId, socketManager, user]);
+  }, [handleOpenScheduleModalFromContactId, user]);
 
   const cleanContact = () => {
     setContactId("");

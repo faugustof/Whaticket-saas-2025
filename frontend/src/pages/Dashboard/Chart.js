@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "@material-ui/core/styles";
 import {
+	BarChart,
 	CartesianGrid,
+	Bar,
 	XAxis,
 	YAxis,
 	Label,
 	ResponsiveContainer,
-	LineChart,
-	Line,
-	Tooltip,
-	Legend,
 } from "recharts";
 import { startOfHour, parseISO, format } from "date-fns";
+
+import { i18n } from "../../translate/i18n";
 
 import Title from "./Title";
 import useTickets from "../../hooks/useTickets";
 
-const Chart = ({ queueTicket }) => {
+const Chart = () => {
 	const theme = useTheme();
 
-	const { tickets, count } = useTickets({
-		queueIds: queueTicket ? `[${queueTicket}]` : "[]",
-	});
+	const date = useRef(new Date().toISOString());
+	const { tickets } = useTickets({ date: date.current });
 
 	const [chartData, setChartData] = useState([
-		{ time: "00:00", amount: 0 },
 		{ time: "01:00", amount: 0 },
 		{ time: "02:00", amount: 0 },
 		{ time: "03:00", amount: 0 },
@@ -48,16 +46,17 @@ const Chart = ({ queueTicket }) => {
 		{ time: "21:00", amount: 0 },
 		{ time: "22:00", amount: 0 },
 		{ time: "23:00", amount: 0 },
+		{ time: "00:00", amount: 0 },
 	]);
 
 	useEffect(() => {
-		setChartData((prevState) => {
+		setChartData(prevState => {
 			let aux = [...prevState];
 
-			aux.forEach((a) => {
-				tickets.forEach((ticket) => {
-					format(startOfHour(parseISO(ticket.createdAt)), "HH:mm") ===
-						a.time && a.amount++;
+			aux.forEach(a => {
+				tickets.forEach(ticket => {
+					format(startOfHour(parseISO(ticket.createdAt)), "HH:mm") === a.time &&
+						a.amount++;
 				});
 			});
 
@@ -67,50 +66,39 @@ const Chart = ({ queueTicket }) => {
 
 	return (
 		<React.Fragment>
-			<Title>{`${"Atendimentos Criados: "}${count}`}</Title>
+			<Title>{`${i18n.t("dashboard.charts.perDay.title")}${
+				tickets.length
+			}`}</Title>
 			<ResponsiveContainer>
-				<LineChart
+				<BarChart
 					data={chartData}
+					barSize={40}
 					width={730}
 					height={250}
 					margin={{
-						top: 5,
-						right: 30,
-						left: 20,
-						bottom: 5,
+						top: 16,
+						right: 16,
+						bottom: 0,
+						left: 24,
 					}}
 				>
 					<CartesianGrid strokeDasharray="3 3" />
-					<XAxis
-						dataKey="time"
-						stroke={theme.palette.text.secondary}
-					/>
+					<XAxis dataKey="time" stroke={theme.palette.text.secondary} />
 					<YAxis
 						type="number"
 						allowDecimals={false}
 						stroke={theme.palette.text.secondary}
 					>
-						<Tooltip />
-						<Legend />
 						<Label
 							angle={270}
 							position="left"
-							style={{
-								textAnchor: "middle",
-								fill: theme.palette.text.primary,
-							}}
+							style={{ textAnchor: "middle", fill: theme.palette.text.primary }}
 						>
 							Tickets
 						</Label>
 					</YAxis>
-					<Line
-						type="monotone"
-						dataKey="amount"
-						stroke="#8884d8"
-						strokeWidth={2}
-					// fill={theme.palette.primary.main}
-					/>
-				</LineChart>
+					<Bar dataKey="amount" fill={theme.palette.primary.main} />
+				</BarChart>
 			</ResponsiveContainer>
 		</React.Fragment>
 	);

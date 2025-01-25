@@ -4,28 +4,20 @@ import * as Yup from "yup";
 import { Formik, Form, Field } from "formik";
 import { toast } from "react-toastify";
 
-import {
-	Button,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogTitle,
-	CircularProgress,
-	Select,
-	InputLabel,
-	MenuItem,
-	FormControl,
-	TextField,
-	InputAdornment,
-	IconButton,
-	Switch,
-	FormControlLabel
-  } from '@material-ui/core';
-  
-import { Visibility, VisibilityOff } from '@material-ui/icons';
-
 import { makeStyles } from "@material-ui/core/styles";
 import { green } from "@material-ui/core/colors";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Select from "@material-ui/core/Select";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+
 import { i18n } from "../../translate/i18n";
 
 import api from "../../services/api";
@@ -82,7 +74,6 @@ const UserModal = ({ open, onClose, userId }) => {
 		email: "",
 		password: "",
 		profile: "user",
-		allTicket: "desabled"
 	};
 
 	const { user: loggedInUser } = useContext(AuthContext);
@@ -90,9 +81,7 @@ const UserModal = ({ open, onClose, userId }) => {
 	const [user, setUser] = useState(initialState);
 	const [selectedQueueIds, setSelectedQueueIds] = useState([]);
 	const [whatsappId, setWhatsappId] = useState(false);
-	const [showPassword, setShowPassword] = useState(false);
 	const { loading, whatsApps } = useWhatsApps();
-
 
 	useEffect(() => {
 		const fetchUser = async () => {
@@ -119,7 +108,7 @@ const UserModal = ({ open, onClose, userId }) => {
 	};
 
 	const handleSaveUser = async values => {
-		const userData = { ...values, whatsappId, queueIds: selectedQueueIds, allTicket: values.allTicket };
+		const userData = { ...values, whatsappId, queueIds: selectedQueueIds };
 		try {
 			if (userId) {
 				await api.put(`/users/${userId}`, userData);
@@ -175,26 +164,14 @@ const UserModal = ({ open, onClose, userId }) => {
 									/>
 									<Field
 										as={TextField}
+										label={i18n.t("userModal.form.password")}
+										type="password"
 										name="password"
+										error={touched.password && Boolean(errors.password)}
+										helperText={touched.password && errors.password}
 										variant="outlined"
 										margin="dense"
 										fullWidth
-										label={i18n.t("userModal.form.password")}
-										error={touched.password && Boolean(errors.password)}
-										helperText={touched.password && errors.password}
-										type={showPassword ? 'text' : 'password'}
-										InputProps={{
-										endAdornment: (
-											<InputAdornment position="end">
-											<IconButton
-												aria-label="toggle password visibility"
-												onClick={() => setShowPassword((e) => !e)}
-											>
-												{showPassword ? <VisibilityOff /> : <Visibility />}
-											</IconButton>
-											</InputAdornment>
-										)
-										}}
 									/>
 								</div>
 								<div className={classes.multFieldLine}>
@@ -270,41 +247,7 @@ const UserModal = ({ open, onClose, userId }) => {
 											</Field>
 										</FormControl>
 									)}
-								/>										
-								<Can
-									role={loggedInUser.profile}
-									perform="user-modal:editProfile"
-									yes={() => (!loading &&
-										<div className={classes.textField}>
-											<FormControl
-												variant="outlined"
-												className={classes.maxWidth}
-												margin="dense"
-												fullWidth
-											>
-												<>
-													<InputLabel id="profile-selection-input-label">
-														{i18n.t("userModal.form.allTicket")}
-													</InputLabel>
-
-													<Field
-														as={Select}
-														label={i18n.t("allTicket.form.viewTags")}
-														name="allTicket"
-														labelId="allTicket-selection-label"
-														id="allTicket-selection"
-														required
-													>
-														<MenuItem value="enabled">{i18n.t("userModal.form.allTicketEnabled")}</MenuItem>
-														<MenuItem value="desabled">{i18n.t("userModal.form.allTicketDesabled")}</MenuItem>
-													</Field>
-												</>
-											</FormControl>
-										</div>
-
-									)}
 								/>
-								
 							</DialogContent>
 							<DialogActions>
 								<Button

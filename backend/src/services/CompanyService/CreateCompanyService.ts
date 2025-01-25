@@ -1,8 +1,8 @@
 import * as Yup from "yup";
 import AppError from "../../errors/AppError";
 import Company from "../../models/Company";
-import Setting from "../../models/Setting";
 import User from "../../models/User";
+import Setting from "../../models/Setting";
 
 interface CompanyData {
   name: string;
@@ -70,7 +70,7 @@ const CreateCompanyService = async (
   const user = await User.create({
     name: company.name,
     email: company.email,
-    password: password || "mudar123",
+    password: companyData.password,
     profile: "admin",
     companyId: company.id
   });

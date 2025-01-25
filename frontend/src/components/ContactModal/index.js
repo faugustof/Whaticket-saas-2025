@@ -168,7 +168,7 @@ const ContactModal = ({ open, onClose, contactId, initialValues, onSave }) => {
 									name="number"
 									error={touched.number && Boolean(errors.number)}
 									helperText={touched.number && errors.number}
-									placeholder="5541998608485"
+									placeholder="5513912344321"
 									variant="outlined"
 									margin="dense"
 								/>

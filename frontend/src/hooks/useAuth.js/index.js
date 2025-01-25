@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { has, isArray } from "lodash";
 
@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
-import { SocketContext } from "../../context/Socket/SocketContext";
+import { socketConnection } from "../../services/socket";
 import moment from "moment";
 const useAuth = () => {
   const history = useHistory();
@@ -55,8 +55,6 @@ const useAuth = () => {
     }
   );
 
-  const socketManager = useContext(SocketContext);
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     (async () => {
@@ -78,7 +76,7 @@ const useAuth = () => {
     const companyId = localStorage.getItem("companyId");
     if (companyId) {
    
-      const socket = socketManager.getSocket(companyId);
+    const socket = socketConnection({ companyId });
 
       socket.on(`company-${companyId}-user`, (data) => {
         if (data.action === "update" && data.user.id === user.id) {
@@ -91,7 +89,8 @@ const useAuth = () => {
       socket.disconnect();
     };
   }
-  }, [socketManager, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleLogin = async (userData) => {
     setLoading(true);

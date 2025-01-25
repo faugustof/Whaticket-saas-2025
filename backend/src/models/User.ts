@@ -35,9 +35,6 @@ class User extends Model<User> {
 
   @Column
   email: string;
-  
-  @Column
-  allTicket: string;
 
   @Column(DataType.VIRTUAL)
   password: string;

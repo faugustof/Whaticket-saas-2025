@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useContext } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -22,7 +22,7 @@ import WhatsAppIcon from "@material-ui/icons/WhatsApp";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import { useDate } from "../../hooks/useDate";
 
-import { SocketContext } from "../../context/Socket/SocketContext";
+import { socketConnection } from "../../services/socket";
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
@@ -54,8 +54,6 @@ const CampaignReport = () => {
   const mounted = useRef(true);
 
   const { datetimeToClient } = useDate();
-
-  const socketManager = useContext(SocketContext);
 
   useEffect(() => {
     if (mounted.current) {
@@ -99,7 +97,7 @@ const CampaignReport = () => {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketManager.getSocket(companyId);
+    const socket = socketConnection({ companyId });
 
     socket.on(`company-${companyId}-campaign`, (data) => {
      
@@ -118,7 +116,7 @@ const CampaignReport = () => {
       socket.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId, socketManager]);
+  }, [campaignId]);
 
   const findCampaign = async () => {
     setLoading(true);

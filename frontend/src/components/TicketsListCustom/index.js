@@ -10,7 +10,7 @@ import TicketsListSkeleton from "../TicketsListSkeleton";
 import useTickets from "../../hooks/useTickets";
 import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import { SocketContext } from "../../context/Socket/SocketContext";
+import { socketConnection } from "../../services/socket";
 
 const useStyles = makeStyles((theme) => ({
   ticketsListWrapper: {
@@ -138,15 +138,6 @@ const reducer = (state, action) => {
     return [...state];
   }
 
-  if (action.type === "UPDATE_TICKET_PRESENCE") {
-    const data = action.payload;
-    const ticketIndex = state.findIndex((t) => t.id === data.ticketId);
-    if (ticketIndex !== -1) {
-      state[ticketIndex].presence = data.presence;
-    }
-    return [...state];
-  }
-
   if (action.type === "DELETE_TICKET") {
     const ticketId = action.payload;
     const ticketIndex = state.findIndex((t) => t.id === ticketId);
@@ -179,8 +170,6 @@ const TicketsListCustom = (props) => {
   const { user } = useContext(AuthContext);
   const { profile, queues } = user;
 
-  const socketManager = useContext(SocketContext);
-
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
@@ -211,7 +200,7 @@ const TicketsListCustom = (props) => {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketManager.getSocket(companyId);
+    const socket = socketConnection({ companyId });
 
     const shouldUpdateTicket = (ticket) =>
       (!ticket.userId || ticket.userId === user?.id || showAll) &&
@@ -220,7 +209,7 @@ const TicketsListCustom = (props) => {
     const notBelongsToUserQueues = (ticket) =>
       ticket.queueId && selectedQueueIds.indexOf(ticket.queueId) === -1;
 
-    socket.on("ready", () => {
+    socket.on("connect", () => {
       if (status) {
         socket.emit("joinTickets", status);
       } else {
@@ -237,7 +226,7 @@ const TicketsListCustom = (props) => {
         });
       }
 
-      if (data.action === "update" && shouldUpdateTicket(data.ticket) && data.ticket.status === status) {
+      if (data.action === "update" && shouldUpdateTicket(data.ticket)) {
         dispatch({
           type: "UPDATE_TICKET",
           payload: data.ticket,
@@ -257,25 +246,18 @@ const TicketsListCustom = (props) => {
       const queueIds = queues.map((q) => q.id);
       if (
         profile === "user" &&
-        (queueIds.indexOf(data.ticket?.queue?.id) === -1 ||
+        (queueIds.indexOf(data.ticket.queue?.id) === -1 ||
           data.ticket.queue === null)
       ) {
         return;
       }
 
-      if (data.action === "create" && shouldUpdateTicket(data.ticket) && ( status === undefined || data.ticket.status === status)) {
+      if (data.action === "create" && shouldUpdateTicket(data.ticket)) {
         dispatch({
           type: "UPDATE_TICKET_UNREAD_MESSAGES",
           payload: data.ticket,
         });
       }
-    });
-
-    socket.on(`company-${companyId}-presence`, (data) => {
-      dispatch({
-        type: "UPDATE_TICKET_PRESENCE",
-        payload: data,
-      });
     });
 
     socket.on(`company-${companyId}-contact`, (data) => {
@@ -290,7 +272,7 @@ const TicketsListCustom = (props) => {
     return () => {
       socket.disconnect();
     };
-  }, [status, showAll, user, selectedQueueIds, tags, users, profile, queues, socketManager]);
+  }, [status, showAll, user, selectedQueueIds, tags, users, profile, queues]);
 
   useEffect(() => {
     if (typeof updateCount === "function") {

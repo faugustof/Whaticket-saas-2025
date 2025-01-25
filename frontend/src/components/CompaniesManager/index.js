@@ -1,33 +1,33 @@
+import React, { useState, useEffect } from "react";
 import {
-  FormControl,
+  makeStyles,
+  Paper,
   Grid,
-  IconButton,
+  FormControl,
   InputLabel,
   MenuItem,
-  Paper,
-  Select,
+  TextField,
   Table,
+  TableHead,
   TableBody,
   TableCell,
-  TableHead,
   TableRow,
-  TextField,
-  makeStyles,
+  IconButton,
+  Select,
 } from "@material-ui/core";
-import { Field, Form, Formik } from "formik";
-import React, { useEffect, useState } from "react";
+import { Formik, Form, Field } from "formik";
 import ButtonWithSpinner from "../ButtonWithSpinner";
 import ConfirmationModal from "../ConfirmationModal";
 
 import { Edit as EditIcon } from "@material-ui/icons";
 
-import { has, head, isArray } from "lodash";
 import { toast } from "react-toastify";
 import useCompanies from "../../hooks/useCompanies";
-import { useDate } from "../../hooks/useDate";
 import usePlans from "../../hooks/usePlans";
-import api from "../../services/api";
 import ModalUsers from "../ModalUsers";
+import api from "../../services/api";
+import { head, isArray, has } from "lodash";
+import { useDate } from "../../hooks/useDate";
 
 import moment from "moment";
 
@@ -426,15 +426,15 @@ export function CompaniesManagerGrid(props) {
       const now = moment();
       const dueDate = moment(record.dueDate);
       const diff = dueDate.diff(now, "days");
-      if (diff >= 1 && diff <= 5) {
+      if (diff === 5) {
         return { backgroundColor: "#fffead" };
       }
-      if (diff <= 0) {
+      if (diff >= -3 && diff <= 4) {
+        return { backgroundColor: "#f7cc8f" };
+      }
+      if (diff === -4) {
         return { backgroundColor: "#fa8c8c" };
       }
-      // else {
-      //   return { backgroundColor: "#affa8c" };
-      // }
     }
     return {};
   };

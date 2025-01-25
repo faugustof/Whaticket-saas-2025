@@ -225,15 +225,6 @@ const TicketListItem = ({ ticket }) => {
             </span>
           } */
         />
-        {ticket.lastMessage ? (
-  ticket.lastMessage.includes("VCARD") ? (
-    <Typography>Novo contato recebido...</Typography>
-  ) : (
-    <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>
-  )
-) : (
-  <br />
-)}
         {ticket.status === "pending" && (
           <ButtonWithSpinner
             color="primary"

@@ -140,10 +140,7 @@ class Whatsapp extends Model<Whatsapp> {
 
   @Column
   expiresTicket: number;
-  
-  @Column
-  number: string;
-  
+
   @Column
   expiresInactiveMessage: string;
 }

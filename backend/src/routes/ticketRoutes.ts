@@ -19,6 +19,4 @@ ticketRoutes.put("/tickets/:ticketId", isAuth, TicketController.update);
 
 ticketRoutes.delete("/tickets/:ticketId", isAuth, TicketController.remove);
 
-ticketRoutes.post("/tickets/closeAll", isAuth, TicketController.closeAll);
-
 export default ticketRoutes;

@@ -20,7 +20,7 @@ import {
 } from "@material-ui/core";
 import api from "../../services/api";
 import { isArray } from "lodash";
-import { SocketContext } from "../../context/Socket/SocketContext";
+import { socketConnection } from "../../services/socket";
 import { useDate } from "../../hooks/useDate";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
@@ -111,8 +111,6 @@ export default function ChatPopover() {
   const [play] = useSound(notifySound);
   const soundAlertRef = useRef();
 
-  const socketManager = useContext(SocketContext);
-
   useEffect(() => {
     soundAlertRef.current = play;
 
@@ -139,10 +137,7 @@ export default function ChatPopover() {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketManager.getSocket(companyId);
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketConnection({ companyId });
     
     socket.on(`company-${companyId}-chat`, (data) => {
       if (data.action === "new-message") {
@@ -160,7 +155,8 @@ export default function ChatPopover() {
     return () => {
       socket.disconnect();
     };
-  }, [socketManager, user.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let unreadsCount = 0;
@@ -284,7 +280,7 @@ export default function ChatPopover() {
                 </ListItem>
               ))}
             {isArray(chats) && chats.length === 0 && (
-              <ListItemText primary={i18n.t("mainDrawer.appBar.notRegister")} />
+              <ListItemText primary={i18n.t("Notificação")} />
             )}
           </List>
         </Paper>

@@ -98,12 +98,6 @@ class Queue extends Model<Queue> {
 
   @BelongsTo(() => Prompt)
   prompt: Prompt;
-  
-  @Column
-  mediaPath: string;
-
-  @Column
-  mediaName: string;
 }
 
 export default Queue;

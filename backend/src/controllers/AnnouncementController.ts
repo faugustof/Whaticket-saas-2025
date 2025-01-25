@@ -125,7 +125,7 @@ export const remove = async (
   await DeleteService(id);
 
   const io = getIO();
-  io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-announcement`, {
+  io.emit(`company-${companyId}-announcement`, {
     action: "delete",
     id
   });

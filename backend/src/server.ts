@@ -9,54 +9,32 @@ import { TransferTicketQueue } from "./wbotTransferTicketQueue";
 import cron from "node-cron";
 
 const server = app.listen(process.env.PORT, async () => {
-  try {
-    const companies = await Company.findAll();
-    const sessionPromises = [];
+  const companies = await Company.findAll();
+  const allPromises: any[] = [];
+  companies.map(async c => {
+    const promise = StartAllWhatsAppsSessions(c.id);
+    allPromises.push(promise);
+  });
 
-    for (const c of companies) {
-      sessionPromises.push(StartAllWhatsAppsSessions(c.id));
-    }
-
-    await Promise.all(sessionPromises);
+  Promise.all(allPromises).then(() => {
     startQueueProcess();
-    logger.info(`Server started on port: ${process.env.PORT}`);
-  } catch (error) {
-    logger.error("Error starting server:", error);
-    process.exit(1);
-  }
-});
-
-process.on("uncaughtException", err => {
-  logger.error(`${new Date().toUTCString()} uncaughtException:`, err.message);
-  logger.error(err.stack);
-  // Remove process.exit(1); to avoid abrupt shutdowns
-});
-
-process.on("unhandledRejection", (reason, p) => {
-  logger.error(`${new Date().toUTCString()} unhandledRejection:`, reason, p);
-  // Remove process.exit(1); to avoid abrupt shutdowns
+  });
+  logger.info(`Server started on port: ${process.env.PORT}`);
 });
 
 cron.schedule("* * * * *", async () => {
+
   try {
-    logger.info(`Serviço de transferência de tickets iniciado`);
+    // console.log("Running a job at 01:00 at America/Sao_Paulo timezone")
+    logger.info(`Serviço de transferencia de tickets iniciado`);
+
     await TransferTicketQueue();
-  } catch (error) {
-    logger.error("Error in cron job:", error);
   }
+  catch (error) {
+    logger.error(error);
+  }
+
 });
 
 initIO(server);
-
-// Configure graceful shutdown to handle all outstanding promises
-gracefulShutdown(server, {
-  signals: "SIGINT SIGTERM",
-  timeout: 30000, // 30 seconds
-  onShutdown: async () => {
-    logger.info("Gracefully shutting down...");
-    // Add any other cleanup code here, if necessary
-  },
-  finally: () => {
-    logger.info("Server shutdown complete.");
-  }
-});
+gracefulShutdown(server);

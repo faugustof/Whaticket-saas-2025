@@ -59,10 +59,6 @@ class Contact extends Model<Contact> {
   @HasMany(() => ContactCustomField)
   extraInfo: ContactCustomField[];
 
-  @Default(true)
-  @Column
-  active: boolean;
-
   @ForeignKey(() => Company)
   @Column
   companyId: number;

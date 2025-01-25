@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer, useContext } from "react";
 import { toast } from "react-toastify";
-import { SocketContext } from "../../context/Socket/SocketContext";
+import { socketConnection } from "../../services/socket";
 import n8n from "../../assets/n8n.png";
 import dialogflow from "../../assets/dialogflow.png";
 import webhooks from "../../assets/webhook.png";
@@ -121,8 +121,6 @@ const QueueIntegration = () => {
   const companyId = user.companyId;
   const history = useHistory();
 
-  const socketManager = useContext(SocketContext);
-
   useEffect(() => {
     async function fetchData() {
       const planConfigs = await getPlanCompany(undefined, companyId);
@@ -164,7 +162,7 @@ const QueueIntegration = () => {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketManager.getSocket(companyId);
+    const socket = socketConnection({ companyId });
 
     socket.on(`company-${companyId}-queueIntegration`, (data) => {
       if (data.action === "update" || data.action === "create") {
@@ -179,7 +177,7 @@ const QueueIntegration = () => {
     return () => {
       socket.disconnect();
     };
-  }, [socketManager]);
+  }, []);
 
   const handleOpenUserModal = () => {
     setSelectedIntegration(null);

@@ -36,10 +36,7 @@ class QuickMessage extends Model<QuickMessage> {
 
   @BelongsTo(() => Company)
   company: Company;
-  
-  @Column
-  geral: boolean;
-  
+
   @BelongsTo(() => User)
   user: User;
 

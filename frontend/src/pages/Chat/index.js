@@ -19,7 +19,7 @@ import ChatList from "./ChatList";
 import ChatMessages from "./ChatMessages";
 import { UsersFilter } from "../../components/UsersFilter";
 import api from "../../services/api";
-import { SocketContext } from "../../context/Socket/SocketContext";
+import { socketConnection } from "../../services/socket";
 
 import { has, isObject } from "lodash";
 
@@ -167,8 +167,6 @@ function Chat(props) {
   const scrollToBottomRef = useRef();
   const { id } = useParams();
 
-  const socketManager = useContext(SocketContext);
-
   useEffect(() => {
     return () => {
       isMounted.current = false;
@@ -208,7 +206,7 @@ function Chat(props) {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketManager.getSocket(companyId);
+    const socket = socketConnection({ companyId });
 
     socket.on(`company-${companyId}-chat-user-${user.id}`, (data) => {
       if (data.action === "create") {
@@ -275,7 +273,7 @@ function Chat(props) {
       socket.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChat, socketManager]);
+  }, [currentChat]);
 
   const selectChat = (chat) => {
     try {

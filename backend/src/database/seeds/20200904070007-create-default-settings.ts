@@ -30,14 +30,6 @@ module.exports = {
 						  createdAt: new Date(),
 						  updatedAt: new Date(),
 						  
-						},	
-						{
-						  key: "sendGreetingMessageOneQueues",
-						  value: "disabled",
-						  companyId: 1,
-						  createdAt: new Date(),
-						  updatedAt: new Date(),
-						  
 						},						
                         {
                             key: "userRating",

@@ -1,5 +1,9 @@
 import { Router } from "express";
 import isAuth from "../middleware/isAuth";
+import multer from "multer";
+import uploadConfig from "../config/upload";
+
+const upload = multer(uploadConfig);
 
 import * as QueueOptionController from "../controllers/QueueOptionController";
 
@@ -15,4 +19,16 @@ queueOptionRoutes.put("/queue-options/:queueOptionId", isAuth, QueueOptionContro
 
 queueOptionRoutes.delete("/queue-options/:queueOptionId", isAuth, QueueOptionController.remove);
 
+queueOptionRoutes.post(
+    "/queue-options/:queueOptionId/media-upload",
+    isAuth,
+    upload.array("file"),
+    QueueOptionController.mediaUpload
+  );
+  
+  queueOptionRoutes.delete(
+    "/queue-options/:queueOptionId/media-upload",
+    isAuth,
+    QueueOptionController.deleteMedia
+  );
 export default queueOptionRoutes;

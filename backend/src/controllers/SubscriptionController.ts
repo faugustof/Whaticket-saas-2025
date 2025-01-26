@@ -183,7 +183,7 @@ export const webhook = async (
             }
           });
 
-          io.emit(`company-${companyId}-payment`, {
+          io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-payment`, {
             action: detahe.status,
             company: companyUpdate
           });

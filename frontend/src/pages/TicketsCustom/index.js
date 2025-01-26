@@ -6,14 +6,13 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import TicketsManager from "../../components/TicketsManagerTabs/";
 import Ticket from "../../components/Ticket/";
-import logo from "../../assets/logo.png"; // LOGO//
 import { i18n } from "../../translate/i18n";
 
 const useStyles = makeStyles(theme => ({
 	chatContainer: {
 		flex: 1,
 		// backgroundColor: "#eee",
-		padding: theme.spacing(1), //Aqui ele ajusta espaço na tela de ticket
+		padding: theme.spacing(0), //Aqui ele ajusta espaço na tela de ticket
 		height: `calc(100% - 48px)`,
 		overflowY: "hidden",
 	},
@@ -36,7 +35,7 @@ const useStyles = makeStyles(theme => ({
 		flexDirection: "column",
 	},
 	welcomeMsg: {
-		backgroundColor: theme.palette.boxticket, //DARK MODE //
+		backgroundColor: theme.palette.boxticket, //DARK MODE PLW DESIGN//
 		display: "flex",
 		justifyContent: "space-evenly",
 		alignItems: "center",
@@ -44,6 +43,11 @@ const useStyles = makeStyles(theme => ({
 		textAlign: "center",
 	},
 }));
+
+const logo = `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/login.png`;
+const randomValue = Math.random(); // Generate a random number
+  
+const logoWithRandom = `${logo}?r=${randomValue}`;
 
 const TicketsCustom = () => {
 	const classes = useStyles();
@@ -63,11 +67,9 @@ const TicketsCustom = () => {
 							</>
 						) : (
 							<Paper square variant="outlined" className={classes.welcomeMsg}>
-							{/*  LOGO */}
 							<div>
-							<center><img style={{ margin: "0 auto", width: "70%" }} src={logo} alt="logologin" /></center>
+							<center><img style={{ margin: "0 auto", width: "80%" }} src={logoWithRandom} alt={`${process.env.REACT_APP_NAME_SYSTEM}`} /></center>
 							</div>
-							{/*  LOGO */}
 							{/*<span>{i18n.t("chat.noTicketMessage")}</span>*/}
 							</Paper>
 						)}

@@ -53,7 +53,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   });
 
   const io = getIO();
-  io.emit("schedule", {
+  io.to(`company-${companyId}-mainchannel`).emit("schedule", {
     action: "create",
     schedule
   });
@@ -85,7 +85,7 @@ export const update = async (
   const schedule = await UpdateService({ scheduleData, id: scheduleId, companyId });
 
   const io = getIO();
-  io.emit("schedule", {
+  io.to(`company-${companyId}-mainchannel`).emit("schedule", {
     action: "update",
     schedule
   });
@@ -103,7 +103,7 @@ export const remove = async (
   await DeleteService(scheduleId, companyId);
 
   const io = getIO();
-  io.emit("schedule", {
+  io.to(`company-${companyId}-mainchannel`).emit("schedule", {
     action: "delete",
     scheduleId
   });

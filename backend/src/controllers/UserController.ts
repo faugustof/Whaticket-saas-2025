@@ -10,6 +10,7 @@ import UpdateUserService from "../services/UserServices/UpdateUserService";
 import ShowUserService from "../services/UserServices/ShowUserService";
 import DeleteUserService from "../services/UserServices/DeleteUserService";
 import SimpleListService from "../services/UserServices/SimpleListService";
+import User from "../models/User";
 
 type IndexQuery = {
   searchParam: string;
@@ -42,22 +43,29 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     profile,
     companyId: bodyCompanyId,
     queueIds,
-    whatsappId
+    whatsappId,
+	allTicket
   } = req.body;
   let userCompanyId: number | null = null;
+
+  let requestUser: User = null;
 
   if (req.user !== undefined) {
     const { companyId: cId } = req.user;
     userCompanyId = cId;
+    requestUser = await User.findByPk(req.user.id);
   }
 
-  if (
-    req.url === "/signup" &&
-    (await CheckSettingsHelper("userCreation")) === "disabled"
-  ) {
-    throw new AppError("ERR_USER_CREATION_DISABLED", 403);
-  } else if (req.url !== "/signup" && req.user.profile !== "admin") {
+  const newUserCompanyId = bodyCompanyId || userCompanyId; 
+
+  if (req.url === "/signup") {
+    if (await CheckSettingsHelper("userCreation") === "disabled") {
+      throw new AppError("ERR_USER_CREATION_DISABLED", 403);
+    }
+  } else if (req.user?.profile !== "admin") {
     throw new AppError("ERR_NO_PERMISSION", 403);
+  } else if (newUserCompanyId !== req.user?.companyId && !requestUser?.super) {
+    throw new AppError("ERR_NO_SUPER", 403);
   }
 
   const user = await CreateUserService({
@@ -65,13 +73,14 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     password,
     name,
     profile,
-    companyId: bodyCompanyId || userCompanyId,
+    companyId: newUserCompanyId,
     queueIds,
-    whatsappId
+    whatsappId,
+	allTicket
   });
 
   const io = getIO();
-  io.emit(`company-${userCompanyId}-user`, {
+  io.to(`company-${userCompanyId}-mainchannel`).emit(`company-${userCompanyId}-user`, {
     action: "create",
     user
   });
@@ -91,9 +100,6 @@ export const update = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  if (req.user.profile !== "admin") {
-    throw new AppError("ERR_NO_PERMISSION", 403);
-  }
 
   const { id: requestUserId, companyId } = req.user;
   const { userId } = req.params;
@@ -107,7 +113,7 @@ export const update = async (
   });
 
   const io = getIO();
-  io.emit(`company-${companyId}-user`, {
+  io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-user`, {
     action: "update",
     user
   });
@@ -129,7 +135,7 @@ export const remove = async (
   await DeleteUserService(userId, companyId);
 
   const io = getIO();
-  io.emit(`company-${companyId}-user`, {
+  io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-user`, {
     action: "delete",
     userId
   });

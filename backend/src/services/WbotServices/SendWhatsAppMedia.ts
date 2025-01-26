@@ -14,6 +14,7 @@ interface Request {
   media: Express.Multer.File;
   ticket: Ticket;
   body?: string;
+  isForwarded?: boolean;  
 }
 
 const publicFolder = path.resolve(__dirname, "..", "..", "..", "public");
@@ -117,7 +118,8 @@ export const getMessageOptions = async (
 const SendWhatsAppMedia = async ({
   media,
   ticket,
-  body
+  body,
+  isForwarded = false
 }: Request): Promise<WAMessage> => {
   try {
     const wbot = await GetTicketWbot(ticket);
@@ -131,7 +133,8 @@ const SendWhatsAppMedia = async ({
       options = {
         video: fs.readFileSync(pathMedia),
         caption: bodyMessage,
-        fileName: media.originalname
+        fileName: media.originalname,
+        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
         // gifPlayback: true
       };
     } else if (typeMessage === "audio") {
@@ -141,13 +144,15 @@ const SendWhatsAppMedia = async ({
         options = {
           audio: fs.readFileSync(convert),
           mimetype: typeAudio ? "audio/mp4" : media.mimetype,
-          ptt: true
+          ptt: true,
+          contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
         };
       } else {
         const convert = await processAudioFile(media.path);
         options = {
           audio: fs.readFileSync(convert),
-          mimetype: typeAudio ? "audio/mp4" : media.mimetype
+          mimetype: typeAudio ? "audio/mp4" : media.mimetype,
+          contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
         };
       }
     } else if (typeMessage === "document" || typeMessage === "text") {
@@ -155,19 +160,22 @@ const SendWhatsAppMedia = async ({
         document: fs.readFileSync(pathMedia),
         caption: bodyMessage,
         fileName: media.originalname,
-        mimetype: media.mimetype
+        mimetype: media.mimetype,
+        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
       };
     } else if (typeMessage === "application") {
       options = {
         document: fs.readFileSync(pathMedia),
         caption: bodyMessage,
         fileName: media.originalname,
-        mimetype: media.mimetype
+        mimetype: media.mimetype,
+        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
       };
     } else {
       options = {
         image: fs.readFileSync(pathMedia),
         caption: bodyMessage,
+        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
       };
     }
 

@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
 	chatContainer: {
 		flex: 1,
 		// backgroundColor: "#eee",
-		padding: theme.spacing(4),
+		padding: theme.spacing(0),
 		height: `calc(100% - 48px)`,
 		overflowY: "hidden",
 	},

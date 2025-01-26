@@ -239,6 +239,8 @@ const MessageInput = ({ ticketStatus }) => {
 		setMedias([]);
 	};
 
+
+
 	const handleSendMessage = async () => {
 		if (inputMessage.trim() === "") return;
 		setLoading(true);

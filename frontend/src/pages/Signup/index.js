@@ -14,6 +14,8 @@ import TextField from "@material-ui/core/TextField";
 import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
+import InputMask from 'react-input-mask';
+import api from "../../services/api";
 import {
 	FormControl,
 	InputLabel,
@@ -24,7 +26,6 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import logo from "../../assets/logo.png";
 import { i18n } from "../../translate/i18n";
 
 import { openApi } from "../../services/api";
@@ -35,7 +36,7 @@ const Copyright = () => {
 		<Typography variant="body2" color="textSecondary" align="center">
 			{"Copyright © "}
 			<Link color="inherit" href="#">
-				AtendeChat
+				PLW
 			</Link>{" "}
 		   {new Date().getFullYear()}
 			{"."}
@@ -75,17 +76,56 @@ const UserSchema = Yup.object().shape({
 const SignUp = () => {
 	const classes = useStyles();
 	const history = useHistory();
+	const [allowregister, setallowregister] = useState('enabled');
+    const [trial, settrial] = useState('3');
 	let companyId = null
+
+	useEffect(() => {
+        fetchallowregister();
+        fetchtrial();
+    }, []);
+
+
+    const fetchtrial = async () => {
+  
+ 
+    try {
+        const responsevvv = await api.get("/settings/trial");
+        const allowtrialX = responsevvv.data.value;
+        //console.log(allowregisterX);
+        settrial(allowtrialX);
+        } catch (error) {
+            console.error('Error retrieving trial', error);
+        }
+    };
+
+
+    const fetchallowregister = async () => {
+  
+ 
+    try {
+        const responsevv = await api.get("/settings/allowregister");
+        const allowregisterX = responsevv.data.value;
+        //console.log(allowregisterX);
+        setallowregister(allowregisterX);
+        } catch (error) {
+            console.error('Error retrieving allowregister', error);
+        }
+    };
+
+    if(allowregister === "disabled"){
+    	history.push("/login");    
+    }
 
 	const params = qs.parse(window.location.search)
 	if (params.companyId !== undefined) {
 		companyId = params.companyId
 	}
 
-	const initialState = { name: "", email: "", phone: "", password: "", planId: "", };
+	const initialState = { name: "", email: "", phone: "", password: "", planId: "disabled", };
 
 	const [user] = useState(initialState);
-	const dueDate = moment().add(1, "day").format();
+	const dueDate = moment().add(trial, "day").format();
 	const handleSignUp = async values => {
 		Object.assign(values, { recurrence: "MENSAL" });
 		Object.assign(values, { dueDate: dueDate });
@@ -102,7 +142,7 @@ const SignUp = () => {
 	};
 
 	const [plans, setPlans] = useState([]);
-	const { list: listPlans } = usePlans();
+	const { register: listPlans } = usePlans();
 
 	useEffect(() => {
 		async function fetchData() {
@@ -112,13 +152,18 @@ const SignUp = () => {
 		fetchData();
 	}, []);
 
+	const logo = `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/signup.png`;
+    const randomValue = Math.random(); // Generate a random number
+  
+    const logoWithRandom = `${logo}?r=${randomValue}`;
+
 
 	return (
 		<Container component="main" maxWidth="xs">
 			<CssBaseline />
 			<div className={classes.paper}>
 				<div>
-					<center><img style={{ margin: "0 auto", width: "70%" }} src={logo} alt="Logocadastro" /></center>
+				<img style={{ margin: "0 auto", width: "80%" }} src={logoWithRandom} alt={`${process.env.REACT_APP_NAME_SYSTEM}`} />
 				</div>
 				{/*<Typography component="h1" variant="h5">
 					{i18n.t("signup.title")}
@@ -167,21 +212,30 @@ const SignUp = () => {
 									/>
 								</Grid>
 								
-								<Grid item xs={12}>
-									<Field
-										as={TextField}
-										variant="outlined"
-										fullWidth
-										id="phone"
-										label="Telefone com (DDD)"
-										name="phone"
-										error={touched.email && Boolean(errors.email)}
-										helperText={touched.email && errors.email}
-										autoComplete="phone"
-										required
-									/>
-								</Grid>
-
+							<Grid item xs={12}>
+								<Field
+									as={InputMask}
+									mask="(99) 99999-9999"
+									variant="outlined"
+									fullWidth
+									id="phone"
+									name="phone"
+									error={touched.phone && Boolean(errors.phone)}
+									helperText={touched.phone && errors.phone}
+									autoComplete="phone"
+									required
+								>
+									{({ field }) => (
+										<TextField
+											{...field}
+											variant="outlined"
+											fullWidth
+											label="DDD988888888"
+											inputProps={{ maxLength: 11 }} // Definindo o limite de caracteres
+										/>
+									)}
+								</Field>
+							</Grid>
 								<Grid item xs={12}>
 									<Field
 										as={TextField}
@@ -208,9 +262,12 @@ const SignUp = () => {
 										name="planId"
 										required
 									>
+                                        <MenuItem value="disabled" disabled>
+                                        	<em>Selecione seu plano de assinatura</em>
+										</MenuItem>
 										{plans.map((plan, key) => (
 											<MenuItem key={key} value={plan.id}>
-												{plan.name} - Atendentes: {plan.users} - WhatsApp: {plan.connections} - Filas: {plan.queues} - R$ {plan.value}
+										        {plan.name} - {plan.connections} WhatsApps - {plan.users} Usuários - R$ {plan.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
 											</MenuItem>
 										))}
 									</Field>

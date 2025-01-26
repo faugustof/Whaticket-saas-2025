@@ -10,9 +10,16 @@ import Tab from "@material-ui/core/Tab";
 import Badge from "@material-ui/core/Badge";
 import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
-
+import api from "../../services/api";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
+
+import PlaylistAddCheckOutlinedIcon from '@material-ui/icons/PlaylistAddCheckOutlined';
+
+
+import {
+  Add as AddIcon,
+} from "@material-ui/icons";
 
 import NewTicketModal from "../NewTicketModal";
 import TicketsList from "../TicketsListCustom";
@@ -22,7 +29,7 @@ import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { Can } from "../Can";
 import TicketsQueueSelect from "../TicketsQueueSelect";
-import { Button } from "@material-ui/core";
+import { Button, Snackbar, IconButton } from "@material-ui/core";
 import { TagsFilter } from "../TagsFilter";
 import { UsersFilter } from "../UsersFilter";
 
@@ -37,6 +44,7 @@ const useStyles = makeStyles(theme => ({
 		borderBottomRightRadius: 0,
 		borderRadius:0,
 	},
+
 
 	tabsHeader: {
 		flex: "none",
@@ -53,6 +61,47 @@ const useStyles = makeStyles(theme => ({
 		marginLeft: "auto",
 		padding: 8,
 	},
+  snackbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    backgroundColor: theme.palette.primary.main,
+    color: "white",
+    borderRadius: 30,
+    [theme.breakpoints.down("sm")]: {
+      fontSize: "0.8em",
+    },
+    [theme.breakpoints.up("md")]: {
+      fontSize: "1em",
+    },
+  },
+
+  yesButton: {
+    backgroundColor: "#FFF",
+    color: "rgba(0, 100, 0, 1)",
+    padding: "4px 4px",
+    fontSize: "1em",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    marginRight: theme.spacing(1),
+    "&:hover": {
+      backgroundColor: "darkGreen",
+      color: "#FFF",
+    },
+    borderRadius: 30,
+  },
+  noButton: {
+    backgroundColor: "#FFF",
+    color: "rgba(139, 0, 0, 1)",
+    padding: "4px 4px",
+    fontSize: "1em",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    "&:hover": {
+      backgroundColor: "darkRed",
+      color: "#FFF",
+    },
+    borderRadius: 30,
+  },
 
 	tab: {
 		minWidth: 120,
@@ -142,7 +191,14 @@ const useStyles = makeStyles(theme => ({
 const TicketsManagerTabs = () => {
   const classes = useStyles();
   const history = useHistory();
+  
+  const [isHoveredAll, setIsHoveredAll] = useState(false);
+  const [isHoveredNew, setIsHoveredNew] = useState(false);
+  const [isHoveredResolve, setIsHoveredResolve] = useState(false);
+  const [isHoveredOpen, setIsHoveredOpen] = useState(false);
+  const [isHoveredClosed, setIsHoveredClosed] = useState(false);
 
+  
   const [searchParam, setSearchParam] = useState("");
   const [tab, setTab] = useState("open");
   const [tabOpen, setTabOpen] = useState("open");
@@ -151,7 +207,7 @@ const TicketsManagerTabs = () => {
   const searchInputRef = useRef();
   const { user } = useContext(AuthContext);
   const { profile } = user;
-
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [openCount, setOpenCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -222,6 +278,28 @@ const TicketsManagerTabs = () => {
     setSelectedUsers(users);
   };
 
+  const CloseAllTicket = async () => {
+    try {
+      const { data } = await api.post("/tickets/closeAll", {
+        status: tabOpen,
+        selectedQueueIds,
+      });
+
+      handleSnackbarClose();
+
+    } catch (err) {
+      console.log("Error: ", err);
+    }
+  };
+
+  const handleSnackbarOpen = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   return (
     <Paper elevation={0} variant="outlined" className={classes.ticketsWrapper}>
       <NewTicketModal
@@ -274,13 +352,78 @@ const TicketsManagerTabs = () => {
           </div>
         ) : (
           <>
-            <Button
-              variant="outlined"
+            <Snackbar
+              open={snackbarOpen}
+              onClose={handleSnackbarClose}
+              message={i18n.t("tickets.inbox.closedAllTickets")}
+              ContentProps={{
+                className: classes.snackbar,
+              }}
+              action={
+                <>
+                  <Button
+                    className={classes.yesButton}
+                    size="small"
+                    onClick={CloseAllTicket}
+                  >
+                    {i18n.t("tickets.inbox.yes")}
+                  </Button>
+                  <Button
+                    className={classes.noButton}
+                    size="small"
+                    onClick={handleSnackbarClose}
+                  >
+                    {i18n.t("tickets.inbox.no")}
+                  </Button>
+                </>
+              }
+            />
+            <Badge
               color="primary"
-              onClick={() => setNewTicketModalOpen(true)}
+              invisible={
+                isHoveredAll ||
+                !isHoveredNew ||
+                isHoveredResolve ||
+                isHoveredOpen ||
+                isHoveredClosed
+              }
+              badgeContent={i18n.t("Novo")}
+              classes={{ badge: classes.tabsBadge }}
             >
-              {i18n.t("ticketsManager.buttons.newTicket")}
-            </Button>
+              <IconButton
+                onMouseEnter={() => setIsHoveredNew(true)}
+                onMouseLeave={() => setIsHoveredNew(false)}
+                className={classes.button}
+                onClick={() => {
+                  setNewTicketModalOpen(true);
+                }}
+              >
+                <AddIcon className={classes.icon} />
+              </IconButton>
+            </Badge>
+			{user.profile === "admin" && (
+              <Badge
+                color="primary"
+                invisible={
+                  isHoveredAll ||
+                  isHoveredNew ||
+                  !isHoveredResolve ||
+                  isHoveredOpen ||
+                  isHoveredClosed
+                }
+                badgeContent={i18n.t("tickets.inbox.closedAll")}
+                classes={{ badge: classes.tabsBadge }}
+              >
+                <IconButton
+                  onMouseEnter={() => setIsHoveredResolve(true)}
+                  onMouseLeave={() => setIsHoveredResolve(false)}
+                  className={classes.button}
+                  onClick={handleSnackbarOpen}
+                >
+                  <PlaylistAddCheckOutlinedIcon style={{ color: "green" }} />
+                </IconButton>
+              </Badge>
+			   )}
             <Can
               role={user.profile}
               perform="tickets-manager:showall"
